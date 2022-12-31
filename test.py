@@ -13,6 +13,6 @@ content = json.loads(files[0].content)
 start = timer()
 img = Keyboard(content).render()
 end = timer()
-print("--- rendered at %s seconds ---" % (end - start))
+print(f"--- rendered at {end - start} seconds ---")
 
 img.save("render_output.png", 'PNG')

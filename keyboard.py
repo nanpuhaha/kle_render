@@ -77,12 +77,12 @@ def get_labels(key, fa_subs, kb_subs):
         # replace icons with unicode characters
         for fa_icon in tree.find_class('fa'):
             fa_class = re.search(r'fa-\S+', fa_icon.get('class'))
-            if fa_class and fa_class.group(0) in fa_subs:
-                fa_icon.text = chr(int(fa_subs[fa_class.group(0)], 16))
+            if fa_class and fa_class[0] in fa_subs:
+                fa_icon.text = chr(int(fa_subs[fa_class[0]], 16))
         for kb_icon in tree.find_class('kb'):
             kb_class = re.search(r'kb-\S+', kb_icon.get('class'))
-            if kb_class and kb_class.group(0) in kb_subs:
-                kb_icon.text = chr(int(kb_subs[kb_class.group(0)], 16))
+            if kb_class and kb_class[0] in kb_subs:
+                kb_icon.text = chr(int(kb_subs[kb_class[0]], 16))
 
         # replace breaks with newlines and remove html entities
         for br in tree.xpath('//br'): br.text = '\n'
@@ -100,7 +100,9 @@ def decl_name(decls, name, pred):
 
 def get_fonts(css):
     # define helper functions
-    def is_str(x): return x.type == 'string' or x.type == 'ident'
+    def is_str(x):
+        return x.type in ['string', 'ident']
+
     def is_ttf(x): return x.type == 'url' and '.ttf' in x.value
 
     fonts, ttfs = [None] * 12, {}
