@@ -9,7 +9,7 @@ for fn in os.listdir('.'):
     # if os.path.isfile(fn) and fn.startswith('GMK_ISO'):
     # if os.path.isfile(fn) and fn.startswith('GMK_BIGENTER'):
     if os.path.isfile(fn) and fn.endswith('crunch.png'):
-        os.rename(fn, fn[:-11]+'.png')
+        os.rename(fn, f'{fn[:-11]}.png')
 
         # im = Image.open(fn)
         # mask=Image.new('L', im.size, color=255)

@@ -63,7 +63,7 @@ class Key:
 
     @functools.lru_cache()
     def get_font(self, i, size, symbol):
-        path = 'fonts/{}_font.ttf'.format(self.get_full_profile()[0])
+        path = f'fonts/{self.get_full_profile()[0]}_font.ttf'
         if symbol: return ImageFont.truetype(path, size)
         try: return ImageFont.truetype(io.BytesIO(self.fonts[i]), size)
         except Exception: return ImageFont.truetype(path, size)
@@ -99,16 +99,18 @@ class Key:
         props = {k: int(v * self.res) for k, v in props.items()}
 
         # center SA and decal labels if not explicitly aligned
-        align = self.align if self.align else 0
-        if self.align == None and (self.decal or self.get_full_profile()[0] != 'GMK'):
+        align = self.align or 0
+        if self.align is None and (
+            self.decal or self.get_full_profile()[0] != 'GMK'
+        ):
             align = 7 if len(self.labels) == 1 else 5 if len(self.labels) <= 3 else 0
 
         # calculate row/column and font size of each label
         pattern = [0, 8, 2, 6, 9, 7, 1, 10, 3, 4, 11, 5]
         center_front, center_row, center_col = [digit == '1' for digit in '{0:03b}'.format(align)]
-        props.update({'font_sizes': [], 'positions': []})
+        props |= {'font_sizes': [], 'positions': []}
         for i in range(min(len(self.labels), 12)):
-            row, col = (int(pattern.index(i) / 3), pattern.index(i) % 3)
+            row, col = pattern.index(i) // 3, pattern.index(i) % 3
             col = (1 if col < 1 else -1) if (center_col and row < 3) or (center_front and row > 2) else col
             row = (1 if row < 1 else -1) if (center_row and row < 3) else row
             label_size = self.label_sizes[i] if row != None and row < 3 else 3.0
@@ -346,12 +348,16 @@ class Key:
 
         for i in range(min(len(self.labels), 12)):
             (row, col), text = props['positions'][i], self.labels[i]
-            if not text or row == None: continue
+            if not text or row is None: continue
 
             # load font and calculate text dimensions
             symbol = any(0x2190 <= ord(c) <= 0x26ff for c in text)
             font = self.get_font(row * 3 + col, props['font_sizes'][i], symbol)
-            text = break_text(text, font, width - props['margin_x'] * 2) if not self.decal else text
+            text = (
+                text
+                if self.decal
+                else break_text(text, font, width - props['margin_x'] * 2)
+            )
             text = text.upper() if self.get_full_profile()[0] != 'GMK' and not self.decal else text
             text_width, text_height = font.getsize_multiline(text, spacing=props['line_spacing'])
             # retrieve label color and lighten to simulate reflectivity
@@ -425,14 +431,14 @@ def open_base_img(full_profile, res, base_color, color):
 
 @functools.lru_cache()
 def break_text(text, font, limit):
-    if not ' ' in text: return text
+    if ' ' not in text: return text
     words, lines = text.split(' '), ['']
     while words:
         word = words.pop(0)
         if font.getsize(lines[-1] + word)[0] + 1 < limit or len(lines[-1]) < 1:
-            lines[-1] += word + ' '
+            lines[-1] += f'{word} '
         else:
-            lines.append(word + ' ')
+            lines.append(f'{word} ')
     return '\n'.join([line[:-1] for line in lines])
 
 
